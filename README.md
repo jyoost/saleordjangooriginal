@@ -1,16 +1,15 @@
-![github_saleor_readmew_header_01](https://user-images.githubusercontent.com/5421321/47800694-19bec680-dd2d-11e8-8625-2ed7c690bc13.jpg)
-
 <div align="center">
   <h1>Saleor Commerce</h1>
 </div>
 
 <div align="center">
-  <strong>Customer-centric e-commerce on a modern stack</strong>
+  <strong>This is a fork of miramee/saleor for the purpose of keeping the dashboard 1.0 (django template version) up to date with the main miramee/saleor repository it is in a branch (default) of dashboard1. It is NOT guaranteed to work with the legacy (django template) storefront but will work with the PWA storefront from Miramee.</strong>
 </div>
-
+<p>
 <div align="center">
   A headless e-commerce platform delivering ultra-fast, dynamic, personalized shopping experiences. Beautiful online stores, anywhere, on any device.
 </div>
+</p>
 
 <br>
 
