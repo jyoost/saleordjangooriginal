@@ -92,12 +92,6 @@ def filter_products_by_collections(qs, collections):
     return qs.filter(collections__in=collections)
 
 
-def sort_qs(qs, sort_by):
-    if sort_by:
-        qs = qs.order_by(sort_by["direction"] + sort_by["field"])
-    return qs
-
-
 def filter_products_by_stock_availability(qs, stock_availability):
     qs = qs.annotate(total_quantity=Sum("variants__quantity"))
     if stock_availability == StockAvailability.IN_STOCK:

@@ -318,8 +318,8 @@ enum AttributeSortField {
 }
 
 input AttributeSortingInput {
-  field: AttributeSortField!
   direction: OrderDirection!
+  field: AttributeSortField
 }
 
 type AttributeTranslatableContent implements Node {
@@ -568,6 +568,17 @@ input CategoryInput {
   seo: SeoInput
   backgroundImage: Upload
   backgroundImageAlt: String
+}
+
+enum CategorySortField {
+  NAME
+  PRODUCT_COUNT
+  SUBCATEGORY_COUNT
+}
+
+input CategorySortingInput {
+  direction: OrderDirection!
+  field: CategorySortField
 }
 
 type CategoryTranslatableContent implements Node {
@@ -948,6 +959,17 @@ type CollectionReorderProducts {
   errors: [Error!]
   collection: Collection
   productErrors: [ProductError!]
+}
+
+enum CollectionSortField {
+  NAME
+  AVAILABILITY
+  PRODUCT_COUNT
+}
+
+input CollectionSortingInput {
+  direction: OrderDirection!
+  field: CollectionSortField
 }
 
 type CollectionTranslatableContent implements Node {
@@ -3117,9 +3139,9 @@ input ProductInput {
 }
 
 input ProductOrder {
-  field: ProductOrderField
-  attributeId: ID
   direction: OrderDirection!
+  attributeId: ID
+  field: ProductOrderField
 }
 
 enum ProductOrderField {
@@ -3256,6 +3278,17 @@ type ProductTypeReorderAttributes {
   errors: [Error!]
   productType: ProductType
   productErrors: [ProductError!]
+}
+
+enum ProductTypeSortField {
+  NAME
+  DIGITAL
+  SHIPPING_REQUIRED
+}
+
+input ProductTypeSortingInput {
+  direction: OrderDirection!
+  field: ProductTypeSortField
 }
 
 type ProductTypeUpdate {
@@ -3450,14 +3483,14 @@ type Query {
   digitalContents(before: String, after: String, first: Int, last: Int): DigitalContentCountableConnection
   attributes(query: String, inCategory: ID, inCollection: ID, filter: AttributeFilterInput, sortBy: AttributeSortingInput, before: String, after: String, first: Int, last: Int): AttributeCountableConnection
   attribute(id: ID!): Attribute
-  categories(query: String, filter: CategoryFilterInput, level: Int, before: String, after: String, first: Int, last: Int): CategoryCountableConnection
+  categories(query: String, filter: CategoryFilterInput, sortBy: CategorySortingInput, level: Int, before: String, after: String, first: Int, last: Int): CategoryCountableConnection
   category(id: ID!): Category
   collection(id: ID!): Collection
-  collections(filter: CollectionFilterInput, query: String, before: String, after: String, first: Int, last: Int): CollectionCountableConnection
+  collections(filter: CollectionFilterInput, sortBy: CollectionSortingInput, query: String, before: String, after: String, first: Int, last: Int): CollectionCountableConnection
   product(id: ID!): Product
   products(filter: ProductFilterInput, attributes: [AttributeScalar], categories: [ID], collections: [ID], sortBy: ProductOrder, stockAvailability: StockAvailability, query: String, before: String, after: String, first: Int, last: Int): ProductCountableConnection
   productType(id: ID!): ProductType
-  productTypes(filter: ProductTypeFilterInput, query: String, before: String, after: String, first: Int, last: Int): ProductTypeCountableConnection
+  productTypes(filter: ProductTypeFilterInput, query: String, sortBy: ProductTypeSortingInput, before: String, after: String, first: Int, last: Int): ProductTypeCountableConnection
   productVariant(id: ID!): ProductVariant
   productVariants(ids: [ID], before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
   reportProductSales(period: ReportingPeriod!, before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
@@ -3490,10 +3523,10 @@ type Query {
   checkoutLine(id: ID): CheckoutLine
   checkoutLines(before: String, after: String, first: Int, last: Int): CheckoutLineCountableConnection
   addressValidationRules(countryCode: CountryCode!, countryArea: String, city: String, cityArea: String): AddressValidationData
-  customers(filter: CustomerFilterInput, query: String, before: String, after: String, first: Int, last: Int): UserCountableConnection
+  customers(filter: CustomerFilterInput, sortBy: UserSortingInput, query: String, before: String, after: String, first: Int, last: Int): UserCountableConnection
   me: User
-  staffUsers(filter: StaffUserInput, query: String, before: String, after: String, first: Int, last: Int): UserCountableConnection
-  serviceAccounts(filter: ServiceAccountFilterInput, before: String, after: String, first: Int, last: Int): ServiceAccountCountableConnection
+  staffUsers(filter: StaffUserInput, sortBy: UserSortingInput, query: String, before: String, after: String, first: Int, last: Int): UserCountableConnection
+  serviceAccounts(filter: ServiceAccountFilterInput, sortBy: ServiceAccountSortingInput, before: String, after: String, first: Int, last: Int): ServiceAccountCountableConnection
   serviceAccount(id: ID!): ServiceAccount
   user(id: ID!): User
   node(id: ID!): Node
@@ -3682,6 +3715,16 @@ input ServiceAccountInput {
   name: String
   isActive: Boolean
   permissions: [PermissionEnum]
+}
+
+enum ServiceAccountSortField {
+  NAME
+  CREATION_DATE
+}
+
+input ServiceAccountSortingInput {
+  direction: OrderDirection!
+  field: ServiceAccountSortField
 }
 
 type ServiceAccountToken implements Node {
@@ -4231,6 +4274,18 @@ input UserCreateInput {
   note: String
   sendPasswordEmail: Boolean
   redirectUrl: String
+}
+
+enum UserSortField {
+  FIRST_NAME
+  LAST_NAME
+  EMAIL
+  ORDER_COUNT
+}
+
+input UserSortingInput {
+  direction: OrderDirection!
+  field: UserSortField
 }
 
 type UserUpdateMeta {
