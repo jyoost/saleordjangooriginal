@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import TYPE_CHECKING, Union
+from typing import Union
 
 from django_countries.fields import Country
 from prices import Money, TaxedMoney
@@ -8,11 +8,6 @@ from saleor.core.taxes import TaxType
 from saleor.extensions import ConfigurationTypeField
 from saleor.extensions.base_plugin import BasePlugin
 from saleor.extensions.models import PluginConfiguration
-from saleor.product.models import Product, ProductType
-
-if TYPE_CHECKING:
-    # flake8: noqa
-    from saleor.product.models import Product, ProductType
 
 
 class PluginSample(BasePlugin):
@@ -55,23 +50,23 @@ class PluginSample(BasePlugin):
         }
 
     def calculate_checkout_total(self, checkout, discounts, previous_value):
-        total = Money("1.0", currency=checkout.currency)
+        total = Money("1.0", currency=checkout.get_total().currency)
         return TaxedMoney(total, total)
 
     def calculate_checkout_subtotal(self, checkout, discounts, previous_value):
-        subtotal = Money("1.0", currency=checkout.currency)
+        subtotal = Money("1.0", currency=checkout.get_total().currency)
         return TaxedMoney(subtotal, subtotal)
 
     def calculate_checkout_shipping(self, checkout, discounts, previous_value):
-        price = Money("1.0", currency=checkout.currency)
+        price = Money("1.0", currency=checkout.get_total().currency)
         return TaxedMoney(price, price)
 
     def calculate_order_shipping(self, order, previous_value):
-        price = Money("1.0", currency=order.currency)
+        price = Money("1.0", currency=order.total.currency)
         return TaxedMoney(price, price)
 
     def calculate_checkout_line_total(self, checkout_line, discounts, previous_value):
-        price = Money("1.0", currency=checkout_line.checkout.currency)
+        price = Money("1.0", currency=checkout_line.get_total().currency)
         return TaxedMoney(price, price)
 
     def calculate_order_line_unit(self, order_line, previous_value):

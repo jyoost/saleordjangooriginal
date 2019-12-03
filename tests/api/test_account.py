@@ -670,7 +670,7 @@ CUSTOMER_CREATE_MUTATION = """
 """
 
 
-@patch("saleor.account.emails._send_set_password_email")
+@patch("saleor.dashboard.emails._send_set_password_email")
 def test_customer_create(
     _send_set_password_email_mock, staff_api_client, address, permission_manage_users
 ):
@@ -723,7 +723,7 @@ def test_customer_create(
     assert customer_creation_event.user == new_customer
 
 
-@patch("saleor.account.emails._send_set_user_password_email_with_url.delay")
+@patch("saleor.dashboard.emails._send_set_user_password_email_with_url.delay")
 def test_customer_create_send_password_with_url(
     _send_set_user_password_email_with_url_mock,
     staff_api_client,
@@ -1388,7 +1388,7 @@ STAFF_CREATE_MUTATION = """
 """
 
 
-@patch("saleor.account.emails._send_set_password_email")
+@patch("saleor.dashboard.emails._send_set_password_email")
 def test_staff_create(
     _send_set_password_email_mock, staff_api_client, media_root, permission_manage_staff
 ):
@@ -1424,7 +1424,7 @@ def test_staff_create(
     )
 
 
-@patch("saleor.account.emails._send_set_user_password_email_with_url.delay")
+@patch("saleor.dashboard.emails._send_set_user_password_email_with_url.delay")
 def test_staff_create_send_password_with_url(
     _send_set_user_password_email_with_url_mock,
     staff_api_client,
@@ -2872,71 +2872,6 @@ def test_query_customers_with_filter_placed_orders__(
     assert len(users) == count
 
 
-QUERY_CUSTOMERS_WITH_SORT = """
-    query ($sort_by: UserSortingInput!) {
-        customers(first:5, sortBy: $sort_by) {
-                edges{
-                    node{
-                        firstName
-                    }
-                }
-            }
-        }
-"""
-
-
-@pytest.mark.parametrize(
-    "customer_sort, result_order",
-    [
-        ({"field": "FIRST_NAME", "direction": "ASC"}, ["Joe", "John", "Leslie"]),
-        ({"field": "FIRST_NAME", "direction": "DESC"}, ["Leslie", "John", "Joe"]),
-        ({"field": "LAST_NAME", "direction": "ASC"}, ["John", "Joe", "Leslie"]),
-        ({"field": "LAST_NAME", "direction": "DESC"}, ["Leslie", "Joe", "John"]),
-        ({"field": "EMAIL", "direction": "ASC"}, ["John", "Leslie", "Joe"]),
-        ({"field": "EMAIL", "direction": "DESC"}, ["Joe", "Leslie", "John"]),
-        ({"field": "ORDER_COUNT", "direction": "ASC"}, ["John", "Leslie", "Joe"]),
-        ({"field": "ORDER_COUNT", "direction": "DESC"}, ["Joe", "John", "Leslie"]),
-    ],
-)
-def test_query_customers_with_sort(
-    customer_sort, result_order, staff_api_client, permission_manage_users
-):
-    User.objects.bulk_create(
-        [
-            User(
-                first_name="John",
-                last_name="Allen",
-                email="allen@example.com",
-                is_staff=False,
-                is_active=True,
-            ),
-            User(
-                first_name="Joe",
-                last_name="Doe",
-                email="zordon01@example.com",
-                is_staff=False,
-                is_active=True,
-            ),
-            User(
-                first_name="Leslie",
-                last_name="Wade",
-                email="leslie@example.com",
-                is_staff=False,
-                is_active=True,
-            ),
-        ]
-    )
-    Order.objects.create(user=User.objects.get(email="zordon01@example.com"))
-    variables = {"sort_by": customer_sort}
-    staff_api_client.user.user_permissions.add(permission_manage_users)
-    response = staff_api_client.post_graphql(QUERY_CUSTOMERS_WITH_SORT, variables)
-    content = get_graphql_content(response)
-    users = content["data"]["customers"]["edges"]
-
-    for order, user_first_name in enumerate(result_order):
-        assert users[order]["node"]["firstName"] == user_first_name
-
-
 @pytest.mark.parametrize(
     "customer_filter, count",
     [
@@ -2949,7 +2884,7 @@ def test_query_customers_with_sort(
         ({"search": "pl"}, 2),  # default_shipping_address__country, email
     ],
 )
-def test_query_customer_members_with_filter_search(
+def test_query_customer_memebers_with_filter_search(
     customer_filter,
     count,
     query_customer_with_filter,
@@ -2989,7 +2924,7 @@ def test_query_customer_members_with_filter_search(
     "staff_member_filter, count",
     [({"status": "DEACTIVATED"}, 1), ({"status": "ACTIVE"}, 2)],
 )
-def test_query_staff_members_with_filter_status(
+def test_query_staff_memebers_with_filter_status(
     staff_member_filter,
     count,
     query_staff_users_with_filter,
@@ -3027,7 +2962,7 @@ def test_query_staff_members_with_filter_status(
         ({"search": "pl"}, 3),  # default_shipping_address__country, email
     ],
 )
-def test_query_staff_members_with_filter_search(
+def test_query_staff_memebers_with_filter_search(
     staff_member_filter,
     count,
     query_staff_users_with_filter,
@@ -3070,72 +3005,6 @@ def test_query_staff_members_with_filter_search(
     users = content["data"]["staffUsers"]["edges"]
 
     assert len(users) == count
-
-
-QUERY_STAFF_USERS_WITH_SORT = """
-    query ($sort_by: UserSortingInput!) {
-        staffUsers(first:5, sortBy: $sort_by) {
-                edges{
-                    node{
-                        firstName
-                    }
-                }
-            }
-        }
-"""
-
-
-@pytest.mark.parametrize(
-    "customer_sort, result_order",
-    [
-        # Empty string in result is first_name for staff_api_client.
-        ({"field": "FIRST_NAME", "direction": "ASC"}, ["", "Joe", "John", "Leslie"]),
-        ({"field": "FIRST_NAME", "direction": "DESC"}, ["Leslie", "John", "Joe", ""]),
-        ({"field": "LAST_NAME", "direction": "ASC"}, ["", "John", "Joe", "Leslie"]),
-        ({"field": "LAST_NAME", "direction": "DESC"}, ["Leslie", "Joe", "John", ""]),
-        ({"field": "EMAIL", "direction": "ASC"}, ["John", "Leslie", "", "Joe"]),
-        ({"field": "EMAIL", "direction": "DESC"}, ["Joe", "", "Leslie", "John"]),
-        ({"field": "ORDER_COUNT", "direction": "ASC"}, ["John", "Leslie", "", "Joe"]),
-        ({"field": "ORDER_COUNT", "direction": "DESC"}, ["Joe", "John", "Leslie", ""]),
-    ],
-)
-def test_query_staff_members_with_sort(
-    customer_sort, result_order, staff_api_client, permission_manage_staff
-):
-    User.objects.bulk_create(
-        [
-            User(
-                first_name="John",
-                last_name="Allen",
-                email="allen@example.com",
-                is_staff=True,
-                is_active=True,
-            ),
-            User(
-                first_name="Joe",
-                last_name="Doe",
-                email="zordon01@example.com",
-                is_staff=True,
-                is_active=True,
-            ),
-            User(
-                first_name="Leslie",
-                last_name="Wade",
-                email="leslie@example.com",
-                is_staff=True,
-                is_active=True,
-            ),
-        ]
-    )
-    Order.objects.create(user=User.objects.get(email="zordon01@example.com"))
-    variables = {"sort_by": customer_sort}
-    staff_api_client.user.user_permissions.add(permission_manage_staff)
-    response = staff_api_client.post_graphql(QUERY_STAFF_USERS_WITH_SORT, variables)
-    content = get_graphql_content(response)
-    users = content["data"]["staffUsers"]["edges"]
-
-    for order, user_first_name in enumerate(result_order):
-        assert users[order]["node"]["firstName"] == user_first_name
 
 
 USER_CHANGE_ACTIVE_STATUS_MUTATION = """

@@ -10,14 +10,12 @@ from . import ConfigurationTypeField
 from .models import PluginConfiguration
 
 if TYPE_CHECKING:
-    # flake8: noqa
     from ..core.taxes import TaxType
     from ..checkout.models import Checkout, CheckoutLine
-    from ..discount import DiscountInfo
-    from ..product.models import Product, ProductType
+    from ..product.models import Product
     from ..account.models import Address, User
     from ..order.models import OrderLine, Order
-    from ..payment.interface import GatewayResponse, PaymentData, CustomerSource
+    from ..payment.interface import GatewayResponse, PaymentData
 
 
 class BasePlugin:

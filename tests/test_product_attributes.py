@@ -4,13 +4,7 @@ import pytest
 from prices import Money
 
 from saleor.product import AttributeInputType
-from saleor.product.models import (
-    Attribute,
-    AttributeValue,
-    Product,
-    ProductType,
-    ProductVariant,
-)
+from saleor.product.models import AttributeValue, Product, ProductType, ProductVariant
 from saleor.product.tasks import _update_variants_names
 from saleor.product.utils.attributes import (
     associate_attribute_values_to_instance,
@@ -98,7 +92,6 @@ def test_update_variants_changed_does_nothing_with_no_attributes():
     product_type = MagicMock(spec=ProductType)
     product_type.variant_attributes.all = Mock(return_value=[])
     saved_attributes = []
-    # FIXME: This method no longer returns any value
     assert _update_variants_names(product_type, saved_attributes) is None
 
 
@@ -143,10 +136,3 @@ def test_associate_attribute_to_product_instance_without_values(product):
     # Ensure the values were cleared and no new assignment entry was created
     assert new_assignment.pk == old_assignment.pk
     assert new_assignment.values.count() == 0
-
-
-def test_get_formfield_name_with_unicode_characters(db):
-    text_attribute = Attribute.objects.create(slug="ąęαβδηθλμπ", name="ąęαβδηθλμπ")
-    assert text_attribute.get_formfield_name() == "attribute-ąęαβδηθλμπ-{}".format(
-        text_attribute.pk
-    )

@@ -11,7 +11,7 @@ from ..account.utils import store_user_address
 from ..checkout import AddressType
 from ..core.taxes import zero_money
 from ..core.weight import zero_weight
-from ..discount.models import NotApplicable, Voucher, VoucherType
+from ..discount.models import NotApplicable, VoucherType
 from ..discount.utils import get_products_voucher_discount, validate_voucher_in_order
 from ..extensions.manager import get_extensions_manager
 from ..order import OrderStatus
@@ -324,7 +324,7 @@ def get_valid_shipping_methods_for_order(order: Order):
     )
 
 
-def get_products_voucher_discount_for_order(voucher: Voucher) -> Money:
+def get_products_voucher_discount_for_order(order, voucher):
     """Calculate products discount value for a voucher, depending on its type."""
     prices = None
     if not prices:
@@ -335,7 +335,7 @@ def get_products_voucher_discount_for_order(voucher: Voucher) -> Money:
     return get_products_voucher_discount(voucher, prices)
 
 
-def get_voucher_discount_for_order(order: Order) -> Money:
+def get_voucher_discount_for_order(order):
     """Calculate discount value depending on voucher and discount types.
 
     Raise NotApplicable if voucher of given type cannot be applied.
@@ -349,5 +349,5 @@ def get_voucher_discount_for_order(order: Order) -> Money:
     if order.voucher.type == VoucherType.SHIPPING:
         return order.voucher.get_discount_amount_for(order.shipping_price)
     if order.voucher.type == VoucherType.SPECIFIC_PRODUCT:
-        return get_products_voucher_discount_for_order(order.voucher)
+        return get_products_voucher_discount_for_order(order, order.voucher)
     raise NotImplementedError("Unknown discount type")

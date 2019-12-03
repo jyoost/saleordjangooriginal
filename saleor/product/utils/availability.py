@@ -1,7 +1,8 @@
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Iterable, Optional, Tuple, Union
+from collections import namedtuple
+from decimal import Decimal
+from typing import Iterable, Union
 
-from prices import TaxedMoney, TaxedMoneyRange
+from prices import TaxedMoneyRange
 
 from saleor.graphql.core.types import MoneyRange
 from saleor.product.models import Product, ProductVariant
@@ -11,40 +12,35 @@ from ...discount import DiscountInfo
 from ...extensions.manager import get_extensions_manager
 from .. import ProductAvailabilityStatus, VariantAvailabilityStatus
 
-if TYPE_CHECKING:
-    from django.db.models.query import QuerySet
+ProductAvailability = namedtuple(
+    "ProductAvailability",
+    (
+        "available",
+        "on_sale",
+        "price_range",
+        "price_range_undiscounted",
+        "discount",
+        "price_range_local_currency",
+        "discount_local_currency",
+    ),
+)
 
-    from ...extensions.manager import ExtensionsManager
-
-
-@dataclass
-class ProductAvailability:
-    available: bool
-    on_sale: bool
-    price_range: TaxedMoneyRange
-    price_range_undiscounted: TaxedMoneyRange
-    discount: Optional[TaxedMoney]
-    price_range_local_currency: Optional[TaxedMoneyRange]
-    discount_local_currency: Optional[TaxedMoneyRange]
-
-
-@dataclass
-class VariantAvailability:
-    available: bool
-    on_sale: bool
-    price: TaxedMoney
-    price_undiscounted: TaxedMoney
-    discount: Optional[TaxedMoney]
-    price_local_currency: Optional[TaxedMoney]
-    discount_local_currency: Optional[TaxedMoney]
+VariantAvailability = namedtuple(
+    "ProductAvailability",
+    (
+        "available",
+        "on_sale",
+        "price",
+        "price_undiscounted",
+        "discount",
+        "price_local_currency",
+        "discount_local_currency",
+    ),
+)
 
 
 def products_with_availability(
-    products: "QuerySet[Product]",
-    discounts,
-    country: str,
-    local_currency: str,
-    extensions: "ExtensionsManager",
+    products, discounts, country, local_currency, extensions
 ):
     for product in products:
         yield (
@@ -55,7 +51,7 @@ def products_with_availability(
         )
 
 
-def get_product_availability_status(product: "Product") -> ProductAvailabilityStatus:
+def get_product_availability_status(product):
     is_visible = product.is_visible
     are_all_variants_in_stock = all(
         variant.is_in_stock() for variant in product.variants.all()
@@ -79,43 +75,34 @@ def get_product_availability_status(product: "Product") -> ProductAvailabilitySt
     return ProductAvailabilityStatus.READY_FOR_PURCHASE
 
 
-def get_variant_availability_status(
-    variant: ProductVariant
-) -> VariantAvailabilityStatus:
+def get_variant_availability_status(variant):
     if not variant.is_in_stock():
         return VariantAvailabilityStatus.OUT_OF_STOCK
     return VariantAvailabilityStatus.AVAILABLE
 
 
-def _get_total_discount_from_range(
-    undiscounted: TaxedMoneyRange, discounted: TaxedMoneyRange
-) -> Optional[TaxedMoney]:
-    """Calculate the discount amount between two TaxedMoneyRange.
-
-    Subtract two prices and return their total discount, if any.
-    Otherwise, it returns None.
-    """
-    return _get_total_discount(undiscounted.start, discounted.start)
-
-
 def _get_total_discount(
-    undiscounted: TaxedMoney, discounted: TaxedMoney
-) -> Optional[TaxedMoney]:
-    """Calculate the discount amount between two TaxedMoney.
+    undiscounted: Union[MoneyRange, TaxedMoneyRange, Decimal],
+    discounted: Union[MoneyRange, TaxedMoneyRange, Decimal],
+):
+    """Calculate the discount amount between two amounts.
 
-    Subtract two prices and return their total discount, if any.
-    Otherwise, it returns None.
+    Subtract two prices that are whether a price range or decimal prices
+    and return their total discount, if any. Otherwise, it returns None.
     """
-    if undiscounted > discounted:
-        return undiscounted - discounted
+    if not isinstance(undiscounted, (MoneyRange, TaxedMoneyRange)):
+        if undiscounted > discounted:
+            return undiscounted - discounted
+    elif undiscounted.start > discounted.start:
+        return undiscounted.start - discounted.stop
     return None
 
 
 def _get_product_price_range(
     discounted: Union[MoneyRange, TaxedMoneyRange],
     undiscounted: Union[MoneyRange, TaxedMoneyRange],
-    local_currency: Optional[str] = None,
-) -> Tuple[TaxedMoneyRange, TaxedMoney]:
+    local_currency: str = None,
+):
     price_range_local = None
     discount_local_currency = None
 
@@ -131,9 +118,9 @@ def _get_product_price_range(
 def get_product_availability(
     product: Product,
     discounts: Iterable[DiscountInfo] = None,
-    country: Optional[str] = None,
-    local_currency: Optional[str] = None,
-    extensions: Optional["ExtensionsManager"] = None,
+    country=None,
+    local_currency=None,
+    extensions=None,
 ) -> ProductAvailability:
 
     if not extensions:
@@ -157,7 +144,7 @@ def get_product_availability(
         ),
     )
 
-    discount = _get_total_discount_from_range(undiscounted, discounted)
+    discount = _get_total_discount(undiscounted, discounted)
     price_range_local, discount_local_currency = _get_product_price_range(
         discounted, undiscounted, local_currency
     )
@@ -178,9 +165,9 @@ def get_product_availability(
 def get_variant_availability(
     variant: ProductVariant,
     discounts: Iterable[DiscountInfo] = None,
-    country: Optional[str] = None,
-    local_currency: Optional[str] = None,
-    extensions: Optional["ExtensionsManager"] = None,
+    country=None,
+    local_currency=None,
+    extensions=None,
 ) -> VariantAvailability:
 
     if not extensions:

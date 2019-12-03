@@ -111,22 +111,17 @@ from .resolvers import (
     resolve_report_product_sales,
 )
 from .scalars import AttributeScalar
-from .sorters import (
-    AttributeSortingInput,
-    CategorySortingInput,
-    CollectionSortingInput,
-    ProductOrder,
-    ProductTypeSortingInput,
-)
 from .types import (
     Attribute,
     Category,
     Collection,
     DigitalContent,
     Product,
+    ProductOrder,
     ProductType,
     ProductVariant,
 )
+from .types.attributes import AttributeSortingInput
 
 
 class ProductQueries(graphene.ObjectType):
@@ -161,7 +156,9 @@ class ProductQueries(graphene.ObjectType):
             ),
         ),
         filter=AttributeFilterInput(description="Filtering options for attributes."),
-        sort_by=AttributeSortingInput(description="Sorting options for attributes."),
+        sort_by=graphene.Argument(
+            AttributeSortingInput, description="Sorting options for attributes."
+        ),
     )
     attribute = graphene.Field(
         Attribute,
@@ -174,7 +171,6 @@ class ProductQueries(graphene.ObjectType):
         Category,
         query=graphene.String(description=DESCRIPTIONS["category"]),
         filter=CategoryFilterInput(description="Filtering options for categories."),
-        sort_by=CategorySortingInput(description="Sort categories."),
         level=graphene.Argument(
             graphene.Int,
             description="Filter categories by the nesting level in the category tree.",
@@ -198,7 +194,6 @@ class ProductQueries(graphene.ObjectType):
     collections = FilterInputConnectionField(
         Collection,
         filter=CollectionFilterInput(description="Filtering options for collections."),
-        sort_by=CollectionSortingInput(description="Sort collections."),
         query=graphene.String(description=DESCRIPTIONS["collection"]),
         description="List of the shop's collections.",
     )
@@ -233,7 +228,7 @@ class ProductQueries(graphene.ObjectType):
                 "Saleor 2.10, use the `filter` field instead."
             ),
         ),
-        sort_by=ProductOrder(description="Sort products."),
+        sort_by=graphene.Argument(ProductOrder, description="Sort products."),
         stock_availability=graphene.Argument(
             StockAvailability, description="Filter products by stock availability."
         ),
@@ -253,7 +248,6 @@ class ProductQueries(graphene.ObjectType):
             description="Filtering options for product types."
         ),
         query=graphene.String(description=DESCRIPTIONS["product_type"]),
-        sort_by=ProductTypeSortingInput(description="Sort product types."),
         description="List of the shop's product types.",
     )
     product_variant = graphene.Field(
@@ -285,7 +279,7 @@ class ProductQueries(graphene.ObjectType):
         return graphene.Node.get_node_from_global_id(info, id, Attribute)
 
     def resolve_categories(self, info, level=None, query=None, **_kwargs):
-        return resolve_categories(info, level=level, query=query, **_kwargs)
+        return resolve_categories(info, level=level, query=query)
 
     def resolve_category(self, info, id):
         return graphene.Node.get_node_from_global_id(info, id, Category)
@@ -294,7 +288,7 @@ class ProductQueries(graphene.ObjectType):
         return graphene.Node.get_node_from_global_id(info, id, Collection)
 
     def resolve_collections(self, info, query=None, **_kwargs):
-        return resolve_collections(info, query, **_kwargs)
+        return resolve_collections(info, query)
 
     @permission_required("product.manage_products")
     def resolve_digital_content(self, info, id):
@@ -314,7 +308,7 @@ class ProductQueries(graphene.ObjectType):
         return graphene.Node.get_node_from_global_id(info, id, ProductType)
 
     def resolve_product_types(self, info, query=None, **_kwargs):
-        return resolve_product_types(info, query, **_kwargs)
+        return resolve_product_types(info, query)
 
     def resolve_product_variant(self, info, id):
         return graphene.Node.get_node_from_global_id(info, id, ProductVariant)

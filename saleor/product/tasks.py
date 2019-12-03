@@ -1,5 +1,3 @@
-from typing import Iterable, List, Optional
-
 from ..celeryconf import app
 from ..discount.models import Sale
 from .models import Attribute, Product, ProductType, ProductVariant
@@ -12,7 +10,7 @@ from .utils.variant_prices import (
 )
 
 
-def _update_variants_names(instance: ProductVariant, saved_attributes: Iterable):
+def _update_variants_names(instance, saved_attributes):
     """Product variant names are created from names of assigned attributes.
 
     After change in attribute value name, for all product variants using this
@@ -35,23 +33,21 @@ def _update_variants_names(instance: ProductVariant, saved_attributes: Iterable)
 
 
 @app.task
-def update_variants_names(product_type_pk: List[int], saved_attributes_ids: List[int]):
+def update_variants_names(product_type_pk, saved_attributes_ids):
     instance = ProductType.objects.get(pk=product_type_pk)
     saved_attributes = Attribute.objects.filter(pk__in=saved_attributes_ids)
-    _update_variants_names(instance, saved_attributes)
+    return _update_variants_names(instance, saved_attributes)
 
 
 @app.task
-def update_product_minimal_variant_price_task(product_pk: int):
+def update_product_minimal_variant_price_task(product_pk):
     product = Product.objects.get(pk=product_pk)
     update_product_minimal_variant_price(product)
 
 
 @app.task
 def update_products_minimal_variant_prices_of_catalogues_task(
-    product_ids: Optional[List[int]] = None,
-    category_ids: Optional[List[int]] = None,
-    collection_ids: Optional[List[int]] = None,
+    product_ids=None, category_ids=None, collection_ids=None
 ):
     update_products_minimal_variant_prices_of_catalogues(
         product_ids, category_ids, collection_ids
@@ -59,13 +55,13 @@ def update_products_minimal_variant_prices_of_catalogues_task(
 
 
 @app.task
-def update_products_minimal_variant_prices_of_discount_task(discount_pk: int):
+def update_products_minimal_variant_prices_of_discount_task(discount_pk):
     discount = Sale.objects.get(pk=discount_pk)
     update_products_minimal_variant_prices_of_discount(discount)
 
 
 @app.task
-def update_products_minimal_variant_prices_task(product_ids: List[int]):
+def update_products_minimal_variant_prices_task(product_ids):
     products = Product.objects.filter(pk__in=product_ids)
     update_products_minimal_variant_prices(products)
 

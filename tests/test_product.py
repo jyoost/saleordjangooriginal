@@ -2,11 +2,10 @@ import datetime
 import os
 import re
 from decimal import Decimal
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 from bs4 import BeautifulSoup, Tag
-from django.forms import HiddenInput
 from django.http import JsonResponse
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -21,7 +20,6 @@ from saleor.menu.models import MenuItemTranslation
 from saleor.menu.utils import update_menu
 from saleor.product import AttributeInputType, ProductAvailabilityStatus, models
 from saleor.product.filters import filter_products_by_attributes_values
-from saleor.product.forms import VariantChoiceField
 from saleor.product.models import (
     Attribute,
     AttributeTranslation,
@@ -581,7 +579,7 @@ def test_product_filter_sorted_by_wrong_parameter(authorized_client, product, ca
 def test_get_variant_picker_data_proper_variant_count(product):
     data = get_variant_picker_data(
         product, discounts=None, extensions=None, local_currency=None
-    ).as_dict()
+    )
 
     assert len(data["variantAttributes"][0]["values"]) == 1
 
@@ -610,9 +608,7 @@ def test_get_variant_picker_data_no_nested_attributes(variant, product_type, cat
     )
 
     product = variant.product
-    data = get_variant_picker_data(
-        product, discounts=None, local_currency=None
-    ).as_dict()
+    data = get_variant_picker_data(product, discounts=None, local_currency=None)
 
     assert len(data["variantAttributes"]) == 0
 
@@ -866,7 +862,7 @@ def test_variant_picker_data_with_translations(
     product, translated_variant_fr, settings
 ):
     settings.LANGUAGE_CODE = "fr"
-    variant_picker_data = get_variant_picker_data(product).as_dict()
+    variant_picker_data = get_variant_picker_data(product)
     attribute = variant_picker_data["variantAttributes"][0]
     assert attribute["name"] == translated_variant_fr.name
 
@@ -984,9 +980,7 @@ def test_variant_picker_data_price_range(product_type, category):
     start = TaxedMoney(net=Money("11.00", "USD"), gross=Money("11.00", "USD"))
     stop = TaxedMoney(net=Money("20.00", "USD"), gross=Money("20.00", "USD"))
 
-    picker_data = get_variant_picker_data(
-        product, discounts=None, local_currency=None
-    ).as_dict()
+    picker_data = get_variant_picker_data(product, discounts=None, local_currency=None)
 
     min_price = picker_data["availability"]["priceRange"]["minPrice"]
     min_price = TaxedMoney(
@@ -1011,15 +1005,3 @@ def test_costs_get_margin_for_variant(variant, price, cost):
     variant.cost_price = cost
     variant.price_override = price
     assert not get_margin_for_variant(variant)
-
-
-def test_hide_field_in_variant_choice_field_form():
-    form = VariantChoiceField(Mock())
-    variants = MagicMock()
-    variants.count.return_value = variants.all().count.return_value = 1
-    variants.all()[0].pk = "test"
-
-    form.update_field_data(variants, discounts=None, country=None)
-
-    assert isinstance(form.widget, HiddenInput)
-    assert form.widget.attrs.get("value") == "test"

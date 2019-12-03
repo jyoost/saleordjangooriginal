@@ -3,7 +3,9 @@
 </div>
 
 <div align="center">
-  <strong>This is a fork of miramee/saleor for the purpose of keeping the dashboard 1.0 (django template version) up to date with the main miramee/saleor repository it is in a branch (default) of dashboard1. It is NOT guaranteed to work with the legacy (django template) storefront but will work with the PWA storefront from Miramee.</strong>
+  <strong>This is a fork of miramee/saleor for the purpose of keeping the dashboard 1.0 (django template version) up to date with the main miramee/saleor repository it is in a branch (default) of dashboard1. It is NOT guaranteed to work with the legacy (django template) storefront but will work with the PWA storefront.
+   
+   </strong>
 </div>
 <p>
 <div align="center">
@@ -82,7 +84,7 @@ Help us out… If you love free stuff and great software, give us a star! 🌟
 
 ## Installation
 
-Saleor requires Python 3.8, Node.js 10.0+, PostgreSQL and OS-specific dependency tools.
+Saleor requires Python 3.6+, Node.js 10.0+, PostgreSQL and OS-specific dependency tools.
 
 [See the Saleor docs](https://docs.saleor.io/docs/getting-started/intro/) for step-by-step installation and deployment instructions.
 

@@ -11,6 +11,7 @@ from .account.urls import urlpatterns as account_urls
 from .checkout.urls import checkout_urlpatterns as checkout_urls
 from .core.sitemaps import sitemaps
 from .core.urls import urlpatterns as core_urls
+from .dashboard.urls import urlpatterns as dashboard_urls
 from .data_feeds.urls import urlpatterns as feed_urls
 from .graphql.api import schema
 from .graphql.views import GraphQLView
@@ -22,6 +23,7 @@ from .search.urls import urlpatterns as search_urls
 handler404 = "saleor.core.views.handle_404"
 
 non_translatable_urlpatterns = [
+    url(r"^dashboard/", include((dashboard_urls, "dashboard"), namespace="dashboard")),
     url(r"^graphql/", csrf_exempt(GraphQLView.as_view(schema=schema)), name="api"),
     url(
         r"^sitemap\.xml$",
