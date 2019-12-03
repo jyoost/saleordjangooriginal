@@ -4,6 +4,7 @@ All notable, unreleased changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Relocate Checkout and CheckoutLine methods into separate module and update checkout related plugins to use them - #4980 by @krzysztofwolski
 - Fix problem with free shipping voucher - #4942 by @IKarbowiak
 - Add sub-categories to random data - #4949 by @IKarbowiak
 - Deprecate `localized` field in Money type - #4952 by @IKarbowiak
@@ -17,8 +18,11 @@ All notable, unreleased changes to this project will be documented in this file.
 - Now force pytest to ignore the environment variable containing the django settings module - #4992 by @NyanKiyoshi
 - Extend JWT token payload with user information - #4987 by @salwator
 - Optimize the queries for product list in the dashboard - #4995 by @IKarbowiak
+- Drop dashboard 1.0 - #5000 by @IKarbowiak
 - Fixed serialization error on weight fields when running `loaddata` and `dumpdb` - #5005 by @NyanKiyoshi
 - Fixed JSON encoding error on Google Analytics reporting - #5004 by @NyanKiyoshi
+- Create custom field to translation, use new translation types in translations query - #5007 by @fowczarek
+- Take allocated stock in account in `StockAvailability` filter - #5019 by @simonbru
 
 ## 2.9.0
 

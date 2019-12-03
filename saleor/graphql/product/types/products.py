@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from typing import List, Union
 
 import graphene
@@ -33,8 +34,7 @@ from ...core.types import (
     TaxType,
 )
 from ...decorators import permission_required
-from ...translations.enums import LanguageCodeEnum
-from ...translations.resolvers import resolve_translation
+from ...translations.fields import TranslationField
 from ...translations.types import (
     CategoryTranslation,
     CollectionTranslation,
@@ -261,17 +261,8 @@ class ProductVariant(CountableDjangoObjectType, MetadataObjectType):
         ),
         model_field="images",
     )
-    translation = graphene.Field(
-        ProductVariantTranslation,
-        language_code=graphene.Argument(
-            LanguageCodeEnum,
-            description="A language code to return the translation for.",
-            required=True,
-        ),
-        description=(
-            "Returns translated Product Variant fields " "for the given language code."
-        ),
-        resolver=resolve_translation,
+    translation = TranslationField(
+        ProductVariantTranslation, type_name="product variant"
     )
     digital_content = gql_optimizer.field(
         graphene.Field(
@@ -325,11 +316,7 @@ class ProductVariant(CountableDjangoObjectType, MetadataObjectType):
 
     @staticmethod
     def resolve_price(root: models.ProductVariant, *_args):
-        return (
-            root.price_override
-            if root.price_override is not None
-            else root.product.price
-        )
+        return root.base_price
 
     @staticmethod
     @gql_optimizer.resolver_hints(
@@ -344,7 +331,7 @@ class ProductVariant(CountableDjangoObjectType, MetadataObjectType):
             context.currency,
             extensions=context.extensions,
         )
-        return VariantPricingInfo(**availability._asdict())
+        return VariantPricingInfo(**asdict(availability))
 
     resolve_availability = resolve_pricing
 
@@ -480,16 +467,7 @@ class Product(CountableDjangoObjectType, MetadataObjectType):
         ),
         model_field="collections",
     )
-    translation = graphene.Field(
-        ProductTranslation,
-        language_code=graphene.Argument(
-            LanguageCodeEnum,
-            description="A language code to return the translation for.",
-            required=True,
-        ),
-        description=("Returns translated Product fields for the given language code."),
-        resolver=resolve_translation,
-    )
+    translation = TranslationField(ProductTranslation, type_name="product")
 
     slug = graphene.String(required=True, description="The slug of a product.")
 
@@ -546,7 +524,7 @@ class Product(CountableDjangoObjectType, MetadataObjectType):
             context.currency,
             context.extensions,
         )
-        return ProductPricingInfo(**availability._asdict())
+        return ProductPricingInfo(**asdict(availability))
 
     resolve_availability = resolve_pricing
 
@@ -749,18 +727,7 @@ class Collection(CountableDjangoObjectType, MetadataObjectType):
     background_image = graphene.Field(
         Image, size=graphene.Int(description="Size of the image.")
     )
-    translation = graphene.Field(
-        CollectionTranslation,
-        language_code=graphene.Argument(
-            LanguageCodeEnum,
-            description="A language code to return the translation for.",
-            required=True,
-        ),
-        description=(
-            "Returns translated Collection fields " "for the given language code."
-        ),
-        resolver=resolve_translation,
-    )
+    translation = TranslationField(CollectionTranslation, type_name="collection")
 
     class Meta:
         description = "Represents a collection of products."
@@ -836,16 +803,7 @@ class Category(CountableDjangoObjectType, MetadataObjectType):
     background_image = graphene.Field(
         Image, size=graphene.Int(description="Size of the image.")
     )
-    translation = graphene.Field(
-        CategoryTranslation,
-        language_code=graphene.Argument(
-            LanguageCodeEnum,
-            description="A language code to return the translation for.",
-            required=True,
-        ),
-        description=("Returns translated Category fields for the given language code."),
-        resolver=resolve_translation,
-    )
+    translation = TranslationField(CategoryTranslation, type_name="category")
 
     class Meta:
         description = (
