@@ -36,7 +36,7 @@ ROOT_URLCONF = "saleor.urls"
 
 WSGI_APPLICATION = "saleor.wsgi.application"
 
-ADMINS = (
+ADMINS = ('John Yoost', 'jyoost@gmail.com'
     # ('Your Name', 'your_email@example.com'),
 )
 MANAGERS = ADMINS
@@ -55,13 +55,14 @@ CACHES = {"default": django_cache_url.config()}
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgres://saleor:saleor@localhost:5432/saleor", conn_max_age=600
+        default="postgres://jyoost:jyoost@localhost:5432/jyoost", conn_max_age=600
     )
 }
 
 
 TIME_ZONE = "America/Chicago"
 LANGUAGE_CODE = "en"
+
 LANGUAGES = [
     ("ar", _("Arabic")),
     ("az", _("Azerbaijani")),
@@ -107,8 +108,9 @@ LANGUAGES = [
     ("zh-hans", _("Simplified Chinese")),
     ("zh-hant", _("Traditional Chinese")),
 ]
+
 LOCALE_PATHS = [os.path.join(PROJECT_ROOT, "locale")]
-USE_I18N = True
+USE_I18N = False
 USE_L10N = True
 USE_TZ = True
 
