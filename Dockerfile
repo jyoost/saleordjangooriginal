@@ -17,7 +17,7 @@ FROM node:10 as build-nodejs
 
 ARG STATIC_URL
 ENV STATIC_URL ${STATIC_URL:-/static/}
-
+ENV DATABASE_URL ${DATABASE_URL}
 # Install node_modules
 COPY webpack.config.js app.json package.json package-lock.json /app/
 WORKDIR /app
@@ -59,7 +59,7 @@ COPY --from=build-nodejs /app/templates /app/templates
 WORKDIR /app
 
 RUN SECRET_KEY=dummy STATIC_URL=${STATIC_URL} python3 manage.py collectstatic --no-input
-
+RUN python3 SECRET_KEY=dummy DATABASE_URL=${STATIC_URL} manage.py migrate --no-input
 RUN mkdir -p /app/media /app/static \
   && chown -R saleor:saleor /app/
 
@@ -68,4 +68,4 @@ ENV PORT 8000
 ENV PYTHONUNBUFFERED 1
 ENV PROCESSES 4
 
-CMD ["uwsgi", "--ini", "/app/saleor/wsgi/uwsgi.ini", "&&", "python", "manage.py", "migrate", "--no-input"]
+CMD ["uwsgi", "--ini", "/app/saleor/wsgi/uwsgi.ini"]
