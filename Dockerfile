@@ -62,6 +62,7 @@ RUN SECRET_KEY=dummy STATIC_URL=${STATIC_URL} python3 manage.py collectstatic --
 RUN mkdir -p /app/media /app/static \
   && chown -R saleor:saleor /app/
 
+### Setuo ENVVARS for uwsgi
 EXPOSE 8000
 ENV PORT 8000
 ENV PYTHONUNBUFFERED 1
