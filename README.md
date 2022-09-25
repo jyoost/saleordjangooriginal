@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>Saleor Commerce</h1>
+  <h1>Original Saleor Commerce</h1>
 </div>
 
 <div align="center">
