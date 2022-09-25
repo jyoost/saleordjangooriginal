@@ -59,7 +59,6 @@ COPY --from=build-nodejs /app/templates /app/templates
 WORKDIR /app
 ### Collectstatic and migrate
 RUN SECRET_KEY=dummy STATIC_URL=${STATIC_URL} python3 manage.py collectstatic --no-input
-RUN SECRET_KEY=dummy DATABASE_URL=postgres://postgres:2cc48fe3240b7807389842ebc528e08c@dokku-postgres-cl8huydri35624tqypoolsgzn:5432/cl8huydri35624tqypoolsgzn python3 manage.py migrate --no-input
 RUN mkdir -p /app/media /app/static \
   && chown -R saleor:saleor /app/
 
